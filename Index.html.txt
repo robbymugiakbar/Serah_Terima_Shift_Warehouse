@@ -1,0 +1,1804 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Serah Terima Shift — Warehouse</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+/* ── RESET & BASE ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --navy:      #0F2240;
+  --navy-mid:  #1A3A60;
+  --navy-lt:   #2557A7;
+  --yellow:    #F5C518;
+  --yellow-lt: #FEF9C3;
+  --yellow-dk: #92400E;
+  --teal:      #0D7377;
+  --teal-lt:   #CCFBF1;
+  --red:       #DC2626;
+  --red-lt:    #FEE2E2;
+  --green:     #16A34A;
+  --green-lt:  #DCFCE7;
+  --orange:    #EA580C;
+  --gray-0:    #F8FAFC;
+  --gray-1:    #F1F5F9;
+  --gray-2:    #E2E8F0;
+  --gray-3:    #CBD5E1;
+  --gray-5:    #64748B;
+  --gray-7:    #334155;
+  --gray-9:    #0F172A;
+  --white:     #FFFFFF;
+  --input-bg:  #FFFDF0;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.10);
+  --shadow-md: 0 4px 16px rgba(0,0,0,.12);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,.16);
+  --transition: .18s cubic-bezier(.4,0,.2,1);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Sora', sans-serif;
+  background: #0B1929;
+  color: var(--gray-9);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── ANIMATED BACKGROUND ── */
+.bg-pattern {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 39px,
+      rgba(255,255,255,.025) 40px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 39px,
+      rgba(255,255,255,.025) 40px
+    );
+}
+
+/* ── WRAPPER ── */
+.app {
+  position: relative; z-index: 1;
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 24px 16px 60px;
+}
+
+/* ── TOP HEADER BAR ── */
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--navy);
+  border-radius: var(--radius-lg);
+  padding: 16px 24px;
+  margin-bottom: 8px;
+  border: 1px solid rgba(255,255,255,.08);
+  box-shadow: var(--shadow-lg);
+  animation: slideDown .5s ease both;
+}
+.topbar-brand { display: flex; align-items: center; gap: 12px; }
+.topbar-icon {
+  width: 40px; height: 40px;
+  background: var(--yellow);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+.topbar-title { color: white; font-size: 15px; font-weight: 700; line-height: 1.2; }
+.topbar-sub   { color: rgba(255,255,255,.45); font-size: 11px; font-family: 'DM Mono', monospace; }
+.topbar-time  { text-align: right; }
+.topbar-clock { color: var(--yellow); font-family: 'DM Mono', monospace; font-size: 22px; font-weight: 500; }
+.topbar-date  { color: rgba(255,255,255,.45); font-size: 11px; }
+
+/* ── CONFIG NOTICE ── */
+.config-notice {
+  background: rgba(245,197,24,.10);
+  border: 1px solid rgba(245,197,24,.30);
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  display: flex; align-items: flex-start; gap: 10px;
+  animation: slideDown .5s .05s ease both; opacity: 0;
+}
+.config-notice .icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+.config-notice p { font-size: 12px; color: rgba(255,255,255,.7); line-height: 1.6; }
+.config-notice strong { color: var(--yellow); }
+.config-notice code {
+  background: rgba(0,0,0,.3); padding: 1px 5px; border-radius: 3px;
+  font-family: 'DM Mono', monospace; font-size: 11px; color: #FCD34D;
+}
+
+/* ── STEP INDICATOR ── */
+.steps {
+  display: flex; gap: 4px;
+  margin-bottom: 20px;
+  animation: slideDown .5s .1s ease both; opacity: 0;
+}
+.step-item {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.step-dot {
+  width: 100%; height: 4px;
+  background: rgba(255,255,255,.12);
+  border-radius: 2px;
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+.step-dot::after {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+  width: 0; background: var(--yellow);
+  border-radius: 2px;
+  transition: width .4s ease;
+}
+.step-item.active .step-dot::after { width: 100%; }
+.step-item.done   .step-dot { background: var(--teal); }
+.step-item.done   .step-dot::after { width: 100%; background: var(--teal); }
+.step-label { font-size: 10px; color: rgba(255,255,255,.4); text-align: center; font-weight: 500; }
+.step-item.active .step-label { color: var(--yellow); }
+.step-item.done   .step-label { color: var(--teal-lt); }
+
+/* ── CARDS ── */
+.card {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--gray-2);
+  animation: slideUp .4s ease both;
+  display: none;
+}
+.card.active { display: block; }
+.card-section { display: none; }
+.card-section.active { display: block; }
+
+.card-header {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid var(--gray-1);
+}
+.card-header-icon {
+  width: 44px; height: 44px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; flex-shrink: 0;
+}
+.card-header-icon.navy  { background: var(--navy);   }
+.card-header-icon.teal  { background: var(--teal);   }
+.card-header-icon.amber { background: #D97706;        }
+.card-header-icon.red   { background: var(--red);    }
+.card-header-icon.green { background: var(--green);  }
+.card-title   { font-size: 16px; font-weight: 700; color: var(--navy); }
+.card-subtitle{ font-size: 12px; color: var(--gray-5); margin-top: 2px; }
+.section-badge {
+  margin-left: auto;
+  background: var(--navy);
+  color: white;
+  font-size: 10px;
+  font-family: 'DM Mono', monospace;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-weight: 500;
+}
+
+/* ── FORM ELEMENTS ── */
+.field-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+.field-grid.cols-1 { grid-template-columns: 1fr; }
+.field-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+@media (max-width: 600px) {
+  .field-grid, .field-grid.cols-3 { grid-template-columns: 1fr; }
+}
+
+.field { display: flex; flex-direction: column; gap: 5px; }
+.field.span-2 { grid-column: span 2; }
+@media (max-width: 600px) { .field.span-2 { grid-column: span 1; } }
+
+label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--gray-7);
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  display: flex; align-items: center; gap: 4px;
+}
+label .req { color: var(--red); }
+
+input[type="text"],
+input[type="date"],
+input[type="time"],
+input[type="number"],
+select,
+textarea {
+  width: 100%;
+  padding: 10px 12px;
+  background: var(--input-bg);
+  border: 1.5px solid var(--gray-2);
+  border-radius: var(--radius-sm);
+  font-family: 'Sora', sans-serif;
+  font-size: 13px;
+  color: var(--gray-9);
+  transition: var(--transition);
+  outline: none;
+  appearance: none;
+}
+input:focus, select:focus, textarea:focus {
+  border-color: var(--navy-lt);
+  background: white;
+  box-shadow: 0 0 0 3px rgba(37,87,167,.12);
+}
+input.error, select.error, textarea.error {
+  border-color: var(--red);
+  background: #FFF5F5;
+  box-shadow: 0 0 0 3px rgba(220,38,38,.10);
+}
+textarea { resize: vertical; min-height: 72px; }
+
+select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748B' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 32px;
+  cursor: pointer;
+}
+
+.field-hint { font-size: 11px; color: var(--gray-5); }
+.field-err  { font-size: 11px; color: var(--red); display: none; }
+.field-err.show { display: block; }
+
+/* ── SHIFT SELECTOR ── */
+.shift-selector { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.shift-btn {
+  padding: 12px 8px;
+  border: 2px solid var(--gray-2);
+  border-radius: var(--radius-md);
+  background: var(--gray-0);
+  cursor: pointer;
+  text-align: center;
+  transition: var(--transition);
+  position: relative;
+}
+.shift-btn:hover { border-color: var(--navy-lt); background: var(--gray-1); }
+.shift-btn.selected {
+  border-color: var(--navy);
+  background: var(--navy);
+  color: white;
+}
+.shift-btn.selected .shift-time { color: var(--yellow); }
+.shift-icon  { font-size: 20px; display: block; margin-bottom: 4px; }
+.shift-name  { font-size: 12px; font-weight: 700; display: block; }
+.shift-time  { font-size: 10px; color: var(--gray-5); display: block;
+               font-family: 'DM Mono', monospace; }
+.shift-btn.selected .shift-time-hidden { display: block; }
+input[type="radio"].shift-radio { position: absolute; opacity: 0; width: 0; height: 0; }
+
+/* ── STOK TABLE ── */
+.stok-table-wrap {
+  overflow-x: auto;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--gray-2);
+  margin-bottom: 8px;
+}
+.stok-table {
+  width: 100%; border-collapse: collapse;
+  font-size: 13px;
+  min-width: 620px;
+}
+.stok-table th {
+  background: var(--navy);
+  color: white;
+  padding: 10px 10px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.stok-table th:first-child { border-radius: var(--radius-sm) 0 0 0; width: 36px; text-align: center; }
+.stok-table td {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--gray-1);
+  vertical-align: middle;
+}
+.stok-table tr:last-child td { border-bottom: none; }
+.stok-table tr:nth-child(even) td { background: var(--gray-0); }
+.stok-table td:first-child { text-align: center; color: var(--gray-5); font-size: 12px; font-family: 'DM Mono', monospace; }
+
+.stok-table input {
+  border: 1px solid var(--gray-2);
+  border-radius: 4px;
+  padding: 6px 8px;
+  font-size: 12px;
+  width: 100%;
+  background: var(--input-bg);
+}
+.stok-table input[type="number"] { text-align: center; }
+
+.selisih-cell {
+  font-family: 'DM Mono', monospace;
+  font-weight: 700;
+  font-size: 13px;
+  text-align: center;
+  min-width: 60px;
+}
+.selisih-ok     { color: var(--green); }
+.selisih-minor  { color: var(--orange); }
+.selisih-danger { color: var(--red); }
+.selisih-empty  { color: var(--gray-3); }
+
+.status-badge {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.status-ok      { background: var(--green-lt);  color: #14532D; }
+.status-minor   { background: #FEF3C7;           color: #92400E; }
+.status-selisih { background: var(--red-lt);     color: #7F1D1D; }
+.status-empty   { background: var(--gray-1);     color: var(--gray-5); }
+
+.add-row-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 8px 14px;
+  background: none;
+  border: 1.5px dashed var(--gray-3);
+  border-radius: var(--radius-sm);
+  color: var(--gray-5);
+  font-size: 12px;
+  font-family: 'Sora', sans-serif;
+  cursor: pointer;
+  transition: var(--transition);
+  width: 100%;
+  justify-content: center;
+  margin-top: 8px;
+}
+.add-row-btn:hover { border-color: var(--navy-lt); color: var(--navy-lt); background: var(--gray-0); }
+
+/* ── AKTIVITAS GRID ── */
+.aktivitas-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border: 1px solid var(--gray-2);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+.akt-row {
+  display: grid;
+  grid-template-columns: 1fr 100px 100px 1fr;
+  gap: 0;
+  border-bottom: 1px solid var(--gray-1);
+  align-items: center;
+}
+.akt-row:last-child { border-bottom: none; }
+.akt-row.header {
+  background: var(--navy);
+  color: white;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .3px;
+}
+.akt-cell {
+  padding: 10px 12px;
+  font-size: 12px;
+}
+.akt-cell:not(:last-child) { border-right: 1px solid var(--gray-1); }
+.akt-row.header .akt-cell { border-right-color: rgba(255,255,255,.1); }
+.akt-name { color: var(--gray-7); font-weight: 500; }
+.akt-row:nth-child(even) { background: var(--gray-0); }
+.akt-cell input {
+  border: 1px solid var(--gray-2);
+  border-radius: 4px;
+  padding: 5px 8px;
+  width: 100%;
+  font-size: 12px;
+  background: var(--input-bg);
+  text-align: center;
+  font-family: 'DM Mono', monospace;
+}
+
+/* ── KONDISI AREA ── */
+.area-list { display: flex; flex-direction: column; gap: 8px; }
+.area-item {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 14px;
+  background: var(--gray-0);
+  border: 1px solid var(--gray-2);
+  border-radius: var(--radius-sm);
+  transition: var(--transition);
+}
+.area-item:hover { background: white; border-color: var(--gray-3); }
+.area-name { font-size: 13px; color: var(--gray-7); font-weight: 500; }
+.kondisi-select {
+  width: 160px;
+  padding: 6px 10px;
+  font-size: 11px;
+  border-radius: 20px;
+  border: 1.5px solid;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  font-family: 'Sora', sans-serif;
+  transition: var(--transition);
+  outline: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath fill='%2364748B' d='M5 7L1 2h8z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  padding-right: 24px;
+}
+.kondisi-select.baik    { border-color: var(--green); background-color: var(--green-lt); color: #14532D; }
+.kondisi-select.perlu   { border-color: var(--orange); background-color: #FEF3C7; color: #92400E; }
+.kondisi-select.rusak   { border-color: var(--red); background-color: var(--red-lt); color: #7F1D1D; }
+.kondisi-select.default { border-color: var(--gray-2); background-color: var(--gray-0); color: var(--gray-5); }
+.area-ket input { font-size: 12px; }
+
+/* ── CATATAN ── */
+.catatan-card {
+  background: var(--gray-0);
+  border: 1px solid var(--gray-2);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  margin-bottom: 12px;
+}
+.catatan-label {
+  font-size: 11px; font-weight: 700; color: var(--navy);
+  text-transform: uppercase; letter-spacing: .5px;
+  margin-bottom: 8px;
+  display: flex; align-items: center; gap: 6px;
+}
+.catatan-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+}
+
+/* ── TANDA TANGAN ── */
+.ttd-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+@media (max-width: 640px) { .ttd-grid { grid-template-columns: 1fr; } }
+.ttd-card {
+  border-radius: var(--radius-md);
+  border: 2px solid;
+  overflow: hidden;
+}
+.ttd-header {
+  padding: 10px 14px;
+  font-size: 12px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .5px;
+}
+.ttd-body { padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+.ttd-card.keluar { border-color: #D97706; }
+.ttd-card.keluar .ttd-header { background: #D97706; color: white; }
+.ttd-card.masuk  { border-color: var(--teal); }
+.ttd-card.masuk  .ttd-header { background: var(--teal); color: white; }
+.ttd-card.spv    { border-color: var(--navy); }
+.ttd-card.spv    .ttd-header { background: var(--navy); color: white; }
+
+/* ── NAV BUTTONS ── */
+.nav-row {
+  display: flex; gap: 10px; justify-content: space-between;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--gray-1);
+}
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 11px 22px;
+  border-radius: var(--radius-sm);
+  font-family: 'Sora', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: var(--transition);
+  text-decoration: none;
+}
+.btn:active { transform: scale(.97); }
+.btn-primary {
+  background: var(--navy);
+  color: white;
+}
+.btn-primary:hover { background: var(--navy-mid); }
+.btn-secondary {
+  background: var(--gray-1);
+  color: var(--gray-7);
+  border: 1.5px solid var(--gray-2);
+}
+.btn-secondary:hover { background: var(--gray-2); }
+.btn-yellow {
+  background: var(--yellow);
+  color: var(--navy);
+}
+.btn-yellow:hover { background: #EAB308; }
+.btn-danger {
+  background: var(--red);
+  color: white;
+}
+.btn-danger:hover { background: #B91C1C; }
+.btn-submit {
+  background: linear-gradient(135deg, #0F2240, #2557A7);
+  color: white;
+  font-size: 14px;
+  padding: 14px 32px;
+  width: 100%;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  margin-top: 8px;
+}
+.btn-submit:hover { opacity: .92; }
+.btn-submit:disabled { opacity: .5; cursor: not-allowed; }
+
+/* ── ALERT SELISIH ── */
+.alert-selisih {
+  background: var(--red-lt);
+  border: 1.5px solid #FCA5A5;
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  margin-bottom: 12px;
+  display: flex; align-items: flex-start; gap: 10px;
+  display: none;
+}
+.alert-selisih.show { display: flex; }
+.alert-selisih .icon { font-size: 18px; flex-shrink: 0; }
+.alert-selisih .text { font-size: 13px; color: #7F1D1D; line-height: 1.6; }
+.alert-selisih strong { color: var(--red); }
+
+/* ── LOADING OVERLAY ── */
+.overlay {
+  position: fixed; inset: 0; z-index: 1000;
+  background: rgba(15,34,64,.75);
+  backdrop-filter: blur(4px);
+  display: none;
+  align-items: center; justify-content: center;
+}
+.overlay.show { display: flex; }
+.overlay-box {
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: 40px 48px;
+  text-align: center;
+  max-width: 360px;
+  box-shadow: var(--shadow-lg);
+  animation: popIn .3s ease both;
+}
+.overlay-spinner {
+  width: 48px; height: 48px;
+  border: 4px solid var(--gray-2);
+  border-top-color: var(--navy);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 16px;
+}
+.overlay-title { font-size: 16px; font-weight: 700; color: var(--navy); margin-bottom: 6px; }
+.overlay-sub   { font-size: 13px; color: var(--gray-5); }
+
+/* ── SUCCESS STATE ── */
+.success-box {
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: 48px 32px;
+  text-align: center;
+  border: 1px solid var(--green);
+  box-shadow: 0 0 0 4px rgba(22,163,74,.12);
+  animation: popIn .4s ease both;
+  display: none;
+}
+.success-box.show { display: block; }
+.success-icon { font-size: 56px; margin-bottom: 16px; }
+.success-title { font-size: 22px; font-weight: 700; color: var(--navy); margin-bottom: 8px; }
+.success-sub   { font-size: 13px; color: var(--gray-5); margin-bottom: 24px; line-height: 1.6; }
+.success-ba    {
+  font-family: 'DM Mono', monospace;
+  background: var(--gray-0);
+  border: 1px solid var(--gray-2);
+  border-radius: var(--radius-sm);
+  padding: 10px 16px;
+  font-size: 13px;
+  color: var(--navy);
+  margin-bottom: 20px;
+}
+
+/* ── LINK SETUP GAS ── */
+.gas-setup {
+  background: var(--navy);
+  border-radius: var(--radius-lg);
+  padding: 20px 24px;
+  margin-bottom: 16px;
+  animation: slideDown .5s .15s ease both; opacity: 0;
+}
+.gas-setup-title { color: var(--yellow); font-size: 13px; font-weight: 700; margin-bottom: 12px;
+                   display: flex; align-items: center; gap: 6px; }
+.gas-setup-grid { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; }
+.gas-input {
+  background: rgba(255,255,255,.08);
+  border: 1.5px solid rgba(255,255,255,.15);
+  border-radius: var(--radius-sm);
+  padding: 9px 12px;
+  color: white;
+  font-size: 12px;
+  font-family: 'DM Mono', monospace;
+  width: 100%;
+  outline: none;
+  transition: var(--transition);
+}
+.gas-input:focus { border-color: var(--yellow); background: rgba(255,255,255,.12); }
+.gas-input::placeholder { color: rgba(255,255,255,.3); }
+.btn-save-url {
+  background: var(--yellow);
+  color: var(--navy);
+  border: none;
+  padding: 9px 16px;
+  border-radius: var(--radius-sm);
+  font-family: 'Sora', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: var(--transition);
+}
+.btn-save-url:hover { background: #EAB308; }
+.gas-status { font-size: 11px; margin-top: 6px; }
+.gas-status.ok  { color: #4ADE80; }
+.gas-status.err { color: #FCA5A5; }
+
+/* ── ANIMATIONS ── */
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes popIn {
+  from { opacity: 0; transform: scale(.9); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── PROGRESS BAR ── */
+.progress-bar-wrap {
+  height: 3px;
+  background: rgba(255,255,255,.08);
+  border-radius: 2px;
+  margin-bottom: 20px;
+  overflow: hidden;
+  animation: slideDown .5s .08s ease both; opacity: 0;
+}
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--teal), var(--yellow));
+  border-radius: 2px;
+  transition: width .5s ease;
+}
+
+/* ── TOOLTIP ── */
+.tooltip { position: relative; display: inline-block; }
+.tooltip-icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 15px; height: 15px;
+  background: var(--gray-3); color: var(--gray-5);
+  border-radius: 50%; font-size: 9px; cursor: help;
+  font-weight: 700; font-style: italic;
+}
+
+/* ── SECTION DIVIDER ── */
+.divider {
+  display: flex; align-items: center; gap: 10px;
+  margin: 16px 0;
+  color: var(--gray-5);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  font-weight: 600;
+}
+.divider::before, .divider::after {
+  content: ''; flex: 1; height: 1px; background: var(--gray-2);
+}
+</style>
+</head>
+<body>
+
+<!-- Background pattern -->
+<div class="bg-pattern"></div>
+
+<!-- Loading Overlay -->
+<div class="overlay" id="overlay">
+  <div class="overlay-box">
+    <div class="overlay-spinner"></div>
+    <div class="overlay-title" id="overlayTitle">Mengirim Data...</div>
+    <div class="overlay-sub" id="overlaySub">Menyimpan ke Google Sheets & mengirim notifikasi email</div>
+  </div>
+</div>
+
+<div class="app">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="topbar-brand">
+      <div class="topbar-icon">🏭</div>
+      <div>
+        <div class="topbar-title">Serah Terima Shift</div>
+        <div class="topbar-sub">WAREHOUSE OPERATION SYSTEM</div>
+      </div>
+    </div>
+    <div class="topbar-time">
+      <div class="topbar-clock" id="clock">--:--:--</div>
+      <div class="topbar-date"  id="dateStr">--</div>
+    </div>
+  </div>
+
+  <!-- SETUP URL Apps Script -->
+  <div class="gas-setup">
+    <div class="gas-setup-title">⚙️ Konfigurasi – URL Google Apps Script Web App</div>
+    <div class="gas-setup-grid">
+      <input class="gas-input" id="gasUrl" type="url"
+        placeholder="https://script.google.com/macros/s/XXXXX/exec">
+      <button class="btn-save-url" onclick="simpanUrl()">Simpan</button>
+    </div>
+    <div class="gas-status" id="gasStatus"></div>
+    <p style="font-size:11px;color:rgba(255,255,255,.35);margin-top:8px;">
+      Cara dapat URL: Apps Script → Deploy → Manage deployments → salin <em>Web app URL</em>
+    </p>
+  </div>
+
+  <!-- CONFIG NOTICE -->
+  <div class="config-notice">
+    <span class="icon">💡</span>
+    <p>
+      <strong>Pertama kali pakai?</strong> Isi URL Apps Script di atas, lalu pastikan fungsi
+      <code>doPost(e)</code> sudah ada di file <code>.gs</code> Anda.
+      Form ini akan mengirim data langsung ke Google Sheets dan memicu notifikasi otomatis.
+    </p>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="progress-bar-wrap">
+    <div class="progress-bar" id="progressBar" style="width:20%"></div>
+  </div>
+
+  <!-- STEPS -->
+  <div class="steps" id="steps">
+    <div class="step-item active" onclick="gotoSection(0)" data-idx="0">
+      <div class="step-dot"></div>
+      <div class="step-label">Info Shift</div>
+    </div>
+    <div class="step-item" onclick="gotoSection(1)" data-idx="1">
+      <div class="step-dot"></div>
+      <div class="step-label">Stok</div>
+    </div>
+    <div class="step-item" onclick="gotoSection(2)" data-idx="2">
+      <div class="step-dot"></div>
+      <div class="step-label">Aktivitas</div>
+    </div>
+    <div class="step-item" onclick="gotoSection(3)" data-idx="3">
+      <div class="step-dot"></div>
+      <div class="step-label">Area</div>
+    </div>
+    <div class="step-item" onclick="gotoSection(4)" data-idx="4">
+      <div class="step-dot"></div>
+      <div class="step-label">Catatan</div>
+    </div>
+    <div class="step-item" onclick="gotoSection(5)" data-idx="5">
+      <div class="step-dot"></div>
+      <div class="step-label">TTD & Submit</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- SEKSI 0 – INFO SHIFT                            -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="card active" id="sec-0">
+    <div class="card-header">
+      <div class="card-header-icon navy">📋</div>
+      <div>
+        <div class="card-title">Informasi Serah Terima</div>
+        <div class="card-subtitle">Isi detail shift yang sedang berlangsung</div>
+      </div>
+      <span class="section-badge">1 / 6</span>
+    </div>
+
+    <div class="field-grid">
+      <div class="field">
+        <label>Tanggal <span class="req">*</span></label>
+        <input type="date" id="tanggal">
+        <div class="field-err" id="err-tanggal">Tanggal wajib diisi</div>
+      </div>
+      <div class="field">
+        <label>Nomor Berita Acara</label>
+        <input type="text" id="noBA" placeholder="Auto-generate" readonly
+               style="background:var(--gray-0);color:var(--gray-5);">
+        <div class="field-hint">Dibuat otomatis oleh sistem</div>
+      </div>
+    </div>
+
+    <div class="divider">Informasi Shift</div>
+
+    <div class="field" style="margin-bottom:14px;">
+      <label>Shift Yang Menyerahkan <span class="req">*</span></label>
+      <div class="shift-selector">
+        <label class="shift-btn" id="sb-pagi">
+          <input type="radio" name="shiftKeluar" value="Shift Pagi (06.00-14.00)" class="shift-radio" onchange="pilihShift('shiftKeluar','pagi')">
+          <span class="shift-icon">🌅</span>
+          <span class="shift-name">PAGI</span>
+          <span class="shift-time">06.00 – 14.00</span>
+        </label>
+        <label class="shift-btn" id="sb-sore">
+          <input type="radio" name="shiftKeluar" value="Shift Sore (14.00-22.00)" class="shift-radio" onchange="pilihShift('shiftKeluar','sore')">
+          <span class="shift-icon">🌤</span>
+          <span class="shift-name">SORE</span>
+          <span class="shift-time">14.00 – 22.00</span>
+        </label>
+        <label class="shift-btn" id="sb-malam">
+          <input type="radio" name="shiftKeluar" value="Shift Malam (22.00-06.00)" class="shift-radio" onchange="pilihShift('shiftKeluar','malam')">
+          <span class="shift-icon">🌙</span>
+          <span class="shift-name">MALAM</span>
+          <span class="shift-time">22.00 – 06.00</span>
+        </label>
+      </div>
+      <div class="field-err" id="err-shiftKeluar">Pilih shift yang menyerahkan</div>
+    </div>
+
+    <div class="field" style="margin-bottom:14px;">
+      <label>Shift Yang Menerima <span class="req">*</span></label>
+      <div class="shift-selector">
+        <label class="shift-btn" id="rb-pagi">
+          <input type="radio" name="shiftMasuk" value="Shift Pagi (06.00-14.00)" class="shift-radio" onchange="pilihShift('shiftMasuk','pagi2')">
+          <span class="shift-icon">🌅</span>
+          <span class="shift-name">PAGI</span>
+          <span class="shift-time">06.00 – 14.00</span>
+        </label>
+        <label class="shift-btn" id="rb-sore">
+          <input type="radio" name="shiftMasuk" value="Shift Sore (14.00-22.00)" class="shift-radio" onchange="pilihShift('shiftMasuk','sore2')">
+          <span class="shift-icon">🌤</span>
+          <span class="shift-name">SORE</span>
+          <span class="shift-time">14.00 – 22.00</span>
+        </label>
+        <label class="shift-btn" id="rb-malam">
+          <input type="radio" name="shiftMasuk" value="Shift Malam (22.00-06.00)" class="shift-radio" onchange="pilihShift('shiftMasuk','malam2')">
+          <span class="shift-icon">🌙</span>
+          <span class="shift-name">MALAM</span>
+          <span class="shift-time">22.00 – 06.00</span>
+        </label>
+      </div>
+      <div class="field-err" id="err-shiftMasuk">Pilih shift yang menerima</div>
+    </div>
+
+    <div class="field-grid">
+      <div class="field">
+        <label>Nama PIC Shift Keluar <span class="req">*</span></label>
+        <input type="text" id="picKeluar" placeholder="cth: Budi Santoso">
+        <div class="field-err" id="err-picKeluar">Nama PIC shift keluar wajib diisi</div>
+      </div>
+      <div class="field">
+        <label>Nama PIC Shift Masuk <span class="req">*</span></label>
+        <input type="text" id="picMasuk" placeholder="cth: Andi Firmansyah">
+        <div class="field-err" id="err-picMasuk">Nama PIC shift masuk wajib diisi</div>
+      </div>
+      <div class="field">
+        <label>Jam Serah Terima <span class="req">*</span></label>
+        <input type="time" id="jamSerah">
+        <div class="field-err" id="err-jamSerah">Jam serah terima wajib diisi</div>
+      </div>
+      <div class="field">
+        <label>Lokasi Warehouse</label>
+        <input type="text" id="lokasi" placeholder="cth: Gudang Utama Bekasi">
+      </div>
+    </div>
+
+    <div class="nav-row">
+      <div></div>
+      <button class="btn btn-primary" onclick="nextSection(0)">
+        Berikutnya — Stok &rarr;
+      </button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- SEKSI 1 – KONDISI STOK                          -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="card" id="sec-1">
+    <div class="card-header">
+      <div class="card-header-icon teal">📦</div>
+      <div>
+        <div class="card-title">Kondisi Stok Akhir Shift</div>
+        <div class="card-subtitle">Input stok sistem dan hasil hitung fisik</div>
+      </div>
+      <span class="section-badge">2 / 6</span>
+    </div>
+
+    <!-- Alert selisih -->
+    <div class="alert-selisih" id="alertSelisih">
+      <span class="icon">⚠️</span>
+      <div class="text">
+        <strong id="alertSelisihText">Terdapat selisih stok!</strong><br>
+        Pastikan dicatat keterangan yang jelas dan dieskalasi ke SPV sebelum shift berakhir.
+      </div>
+    </div>
+
+    <div class="stok-table-wrap">
+      <table class="stok-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th style="min-width:180px;">Nama Barang / SKU</th>
+            <th style="min-width:80px;">Satuan</th>
+            <th style="min-width:90px;">Stok Sistem</th>
+            <th style="min-width:90px;">Stok Fisik</th>
+            <th style="min-width:70px;">Selisih</th>
+            <th style="min-width:60px;">Status</th>
+            <th style="min-width:140px;">Keterangan</th>
+          </tr>
+        </thead>
+        <tbody id="stokBody">
+          <!-- Diisi JS -->
+        </tbody>
+      </table>
+    </div>
+    <button class="add-row-btn" onclick="tambahBariStok()">
+      ＋ Tambah baris SKU
+    </button>
+
+    <div class="nav-row">
+      <button class="btn btn-secondary" onclick="prevSection(1)">&larr; Kembali</button>
+      <button class="btn btn-primary" onclick="nextSection(1)">Aktivitas &rarr;</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- SEKSI 2 – AKTIVITAS SHIFT                       -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="card" id="sec-2">
+    <div class="card-header">
+      <div class="card-header-icon amber">📊</div>
+      <div>
+        <div class="card-title">Ringkasan Aktivitas Shift</div>
+        <div class="card-subtitle">Catat jumlah transaksi yang terjadi selama shift</div>
+      </div>
+      <span class="section-badge">3 / 6</span>
+    </div>
+
+    <div class="aktivitas-grid">
+      <div class="akt-row header">
+        <div class="akt-cell">Jenis Aktivitas</div>
+        <div class="akt-cell" style="text-align:center;">Jml Transaksi</div>
+        <div class="akt-cell" style="text-align:center;">Total Qty</div>
+        <div class="akt-cell">No. Dokumen</div>
+      </div>
+      <!-- Diisi JS -->
+    </div>
+
+    <div class="nav-row">
+      <button class="btn btn-secondary" onclick="prevSection(2)">&larr; Kembali</button>
+      <button class="btn btn-primary" onclick="nextSection(2)">Kondisi Area &rarr;</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- SEKSI 3 – KONDISI AREA                          -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="card" id="sec-3">
+    <div class="card-header">
+      <div class="card-header-icon amber">🏗️</div>
+      <div>
+        <div class="card-title">Kondisi Area & Peralatan</div>
+        <div class="card-subtitle">Cek semua item sebelum serah terima selesai</div>
+      </div>
+      <span class="section-badge">4 / 6</span>
+    </div>
+    <div class="area-list" id="areaList">
+      <!-- Diisi JS -->
+    </div>
+    <div class="nav-row">
+      <button class="btn btn-secondary" onclick="prevSection(3)">&larr; Kembali</button>
+      <button class="btn btn-primary" onclick="nextSection(3)">Catatan &rarr;</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- SEKSI 4 – CATATAN                               -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="card" id="sec-4">
+    <div class="card-header">
+      <div class="card-header-icon red">📝</div>
+      <div>
+        <div class="card-title">Catatan Penting & Eskalasi</div>
+        <div class="card-subtitle">Isi jika ada temuan, instruksi, atau eskalasi ke SPV</div>
+      </div>
+      <span class="section-badge">5 / 6</span>
+    </div>
+
+    <div class="catatan-card">
+      <div class="catatan-label">
+        <span class="catatan-dot" style="background:#EF4444;"></span>
+        Masalah / Temuan Yang Perlu Ditindaklanjuti
+      </div>
+      <textarea id="catatanMasalah" placeholder="Tuliskan masalah atau temuan yang perlu perhatian shift berikutnya..."></textarea>
+    </div>
+
+    <div class="catatan-card">
+      <div class="catatan-label">
+        <span class="catatan-dot" style="background:#F59E0B;"></span>
+        Instruksi Khusus Untuk Shift Berikutnya
+      </div>
+      <textarea id="catatanInstruksi" placeholder="Tuliskan instruksi atau hal yang perlu dilanjutkan shift berikutnya..."></textarea>
+    </div>
+
+    <div class="catatan-card" style="border:1.5px solid #FCA5A5;">
+      <div class="catatan-label" style="color:var(--red);">
+        <span class="catatan-dot" style="background:var(--red);"></span>
+        🚨 Eskalasi ke SPV / Manajemen
+      </div>
+      <textarea id="catatanEskalasi" placeholder="Tuliskan hal-hal yang WAJIB diketahui atau ditangani SPV / manajemen..." style="border-color:#FCA5A5;"></textarea>
+    </div>
+
+    <div class="nav-row">
+      <button class="btn btn-secondary" onclick="prevSection(4)">&larr; Kembali</button>
+      <button class="btn btn-primary" onclick="nextSection(4)">Tanda Tangan &rarr;</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- SEKSI 5 – TTD & SUBMIT                          -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="card" id="sec-5">
+    <div class="card-header">
+      <div class="card-header-icon green">✅</div>
+      <div>
+        <div class="card-title">Persetujuan & Submit</div>
+        <div class="card-subtitle">Lengkapi tanda tangan digital lalu submit</div>
+      </div>
+      <span class="section-badge">6 / 6</span>
+    </div>
+
+    <div class="ttd-grid">
+      <!-- Shift Keluar -->
+      <div class="ttd-card keluar">
+        <div class="ttd-header">🟡 Shift Menyerahkan</div>
+        <div class="ttd-body">
+          <div class="field">
+            <label>Nama <span class="req">*</span></label>
+            <input type="text" id="ttdNamaKeluar" placeholder="Nama lengkap">
+          </div>
+          <div class="field">
+            <label>Jabatan</label>
+            <input type="text" id="ttdJabKeluar" placeholder="cth: Kepala Regu">
+          </div>
+          <div class="field">
+            <label>Status</label>
+            <select id="ttdStatusKeluar">
+              <option value="Belum Ditandatangani">Belum Ditandatangani</option>
+              <option value="Sudah Ditandatangani">Sudah Ditandatangani</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <!-- Shift Masuk -->
+      <div class="ttd-card masuk">
+        <div class="ttd-header">🟢 Shift Menerima</div>
+        <div class="ttd-body">
+          <div class="field">
+            <label>Nama <span class="req">*</span></label>
+            <input type="text" id="ttdNamaMasuk" placeholder="Nama lengkap">
+          </div>
+          <div class="field">
+            <label>Jabatan</label>
+            <input type="text" id="ttdJabMasuk" placeholder="cth: Kepala Regu">
+          </div>
+          <div class="field">
+            <label>Status</label>
+            <select id="ttdStatusMasuk">
+              <option value="Belum Ditandatangani">Belum Ditandatangani</option>
+              <option value="Sudah Ditandatangani">Sudah Ditandatangani</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <!-- SPV -->
+      <div class="ttd-card spv">
+        <div class="ttd-header">🔵 Supervisor / SPV</div>
+        <div class="ttd-body">
+          <div class="field">
+            <label>Nama SPV</label>
+            <input type="text" id="ttdNamaSpv" placeholder="Nama SPV (opsional)">
+          </div>
+          <div class="field">
+            <label>Jabatan</label>
+            <input type="text" id="ttdJabSpv" placeholder="cth: Supervisor Warehouse">
+          </div>
+          <div class="field">
+            <label>Status</label>
+            <select id="ttdStatusSpv">
+              <option value="Belum Ditandatangani">Belum Ditandatangani</option>
+              <option value="Sudah Ditandatangani">Sudah Ditandatangani</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ringkasan sebelum submit -->
+    <div style="background:var(--gray-0);border:1px solid var(--gray-2);border-radius:var(--radius-md);padding:16px;margin-top:16px;" id="ringkasan">
+      <div style="font-size:11px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">
+        📋 Ringkasan Serah Terima
+      </div>
+      <div id="ringkasanContent" style="font-size:12px;color:var(--gray-7);line-height:1.8;"></div>
+    </div>
+
+    <button class="btn btn-submit" id="btnSubmit" onclick="submitForm()">
+      🚀 Submit Serah Terima & Kirim Notifikasi
+    </button>
+
+    <div class="nav-row" style="border-top:none;padding-top:8px;">
+      <button class="btn btn-secondary" onclick="prevSection(5)">&larr; Kembali</button>
+      <button class="btn btn-secondary" onclick="resetForm()" style="color:var(--red);">
+        🔄 Reset Form
+      </button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- SUCCESS STATE                                    -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="success-box" id="successBox">
+    <div class="success-icon">✅</div>
+    <div class="success-title">Serah Terima Berhasil!</div>
+    <div class="success-sub">
+      Data telah tersimpan ke Google Sheets.<br>
+      Notifikasi email telah dikirim ke SPV & tim.
+    </div>
+    <div class="success-ba" id="successBA">Nomor BA: —</div>
+    <button class="btn btn-yellow" onclick="resetForm()" style="margin:0 auto;display:block;">
+      📋 Isi Serah Terima Berikutnya
+    </button>
+  </div>
+
+</div><!-- /app -->
+
+<script>
+// ════════════════════════════════════════════════════════
+// KONFIGURASI — WAJIB DIISI
+// ════════════════════════════════════════════════════════
+// URL Apps Script diisi via form di halaman, atau bisa hardcode di sini:
+let GAS_URL = localStorage.getItem('gas_url') || '';
+
+// ════════════════════════════════════════════════════════
+// DATA STATIS
+// ════════════════════════════════════════════════════════
+const AKTIVITAS = [
+  'Penerimaan Barang (GR)',
+  'Pengeluaran Barang (GI)',
+  'Retur ke Supplier',
+  'Transfer Antar Gudang',
+  'Adjustment Stok',
+  'Packing / Repacking',
+  'Cycle Count / Opname',
+  'Lainnya',
+];
+
+const AREA_ITEMS = [
+  { name: 'Kebersihan area gudang',        icon: '🧹' },
+  { name: 'Kondisi rak / shelving',         icon: '🗄️' },
+  { name: 'Forklift / Handpallet',          icon: '🚜' },
+  { name: 'CCTV & Keamanan',               icon: '📷' },
+  { name: 'Pintu & akses gudang',           icon: '🚪' },
+  { name: 'AC / Ventilasi / Suhu',          icon: '❄️' },
+  { name: 'Barang reject / karantina',      icon: '⚠️' },
+  { name: 'Dokumen fisik (DO/PO/Retur)',    icon: '📁' },
+];
+
+let stokRows  = [];
+let currentSection = 0;
+const TOTAL_SECTIONS = 6;
+
+// ════════════════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  updateClock();
+  setInterval(updateClock, 1000);
+
+  // Set tanggal & jam default
+  const now = new Date();
+  document.getElementById('tanggal').value = now.toISOString().split('T')[0];
+  document.getElementById('jamSerah').value =
+    now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+
+  // Generate nomor BA
+  document.getElementById('noBA').value = generateBA(now);
+
+  // Restore URL
+  if (GAS_URL) {
+    document.getElementById('gasUrl').value = GAS_URL;
+    tampilStatusUrl(true);
+  }
+
+  // Bangun tabel stok (5 baris default)
+  for (let i = 0; i < 5; i++) tambahBariStok();
+
+  // Bangun aktivitas
+  buatAktivitas();
+
+  // Bangun area
+  buatArea();
+});
+
+// ════════════════════════════════════════════════════════
+// CLOCK & TANGGAL
+// ════════════════════════════════════════════════════════
+function updateClock() {
+  const now = new Date();
+  document.getElementById('clock').textContent =
+    now.toLocaleTimeString('id-ID', { hour12: false });
+  document.getElementById('dateStr').textContent =
+    now.toLocaleDateString('id-ID', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+}
+
+function generateBA(date) {
+  const d = date || new Date();
+  const fmt = d.getFullYear().toString() +
+    (d.getMonth()+1).toString().padStart(2,'0') +
+    d.getDate().toString().padStart(2,'0');
+  return `${fmt}-BA-${Math.floor(Math.random()*900+100)}`;
+}
+
+// ════════════════════════════════════════════════════════
+// URL APPS SCRIPT
+// ════════════════════════════════════════════════════════
+function simpanUrl() {
+  const url = document.getElementById('gasUrl').value.trim();
+  if (!url.startsWith('https://script.google.com')) {
+    tampilStatusUrl(false, 'URL tidak valid. Harus dimulai dengan https://script.google.com');
+    return;
+  }
+  GAS_URL = url;
+  localStorage.setItem('gas_url', url);
+  tampilStatusUrl(true);
+}
+
+function tampilStatusUrl(ok, msg) {
+  const el = document.getElementById('gasStatus');
+  if (ok) {
+    el.className = 'gas-status ok';
+    el.textContent = '✓ URL tersimpan – form siap digunakan';
+  } else {
+    el.className = 'gas-status err';
+    el.textContent = '✗ ' + (msg || 'URL belum diisi');
+  }
+}
+
+// ════════════════════════════════════════════════════════
+// SHIFT SELECTOR
+// ════════════════════════════════════════════════════════
+const shiftMap = {
+  shiftKeluar: { pagi:'sb-pagi',  sore:'sb-sore',  malam:'sb-malam'  },
+  shiftMasuk:  { pagi2:'rb-pagi', sore2:'rb-sore', malam2:'rb-malam' },
+};
+
+function pilihShift(group, key) {
+  const map  = shiftMap[group];
+  const vals = Object.values(map);
+  vals.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove('selected');
+  });
+  const target = document.getElementById(map[key]);
+  if (target) target.classList.add('selected');
+  document.getElementById('err-' + group).classList.remove('show');
+}
+
+// ════════════════════════════════════════════════════════
+// TABEL STOK
+// ════════════════════════════════════════════════════════
+function tambahBariStok() {
+  const id = Date.now() + stokRows.length;
+  stokRows.push(id);
+  const tbody = document.getElementById('stokBody');
+  const idx   = stokRows.length;
+
+  const tr = document.createElement('tr');
+  tr.id = 'stok-row-' + id;
+  tr.innerHTML = `
+    <td>${idx}</td>
+    <td><input type="text"   id="sku-nama-${id}"   placeholder="Nama barang / kode SKU" oninput="hitungSelisih(${id})"></td>
+    <td><input type="text"   id="sku-sat-${id}"    placeholder="Pcs/Box" style="max-width:70px;"></td>
+    <td><input type="number" id="sku-sistem-${id}" placeholder="0" min="0" oninput="hitungSelisih(${id})"></td>
+    <td><input type="number" id="sku-fisik-${id}"  placeholder="0" min="0" oninput="hitungSelisih(${id})"></td>
+    <td><div class="selisih-cell selisih-empty" id="sel-${id}">—</div></td>
+    <td><span class="status-badge status-empty" id="stat-${id}">—</span></td>
+    <td><input type="text"   id="sku-ket-${id}"    placeholder="Ket. jika ada selisih"></td>
+  `;
+  tbody.appendChild(tr);
+}
+
+function hitungSelisih(id) {
+  const sistem = parseFloat(document.getElementById(`sku-sistem-${id}`)?.value) || null;
+  const fisik  = parseFloat(document.getElementById(`sku-fisik-${id}`)?.value)  || null;
+  const selDiv = document.getElementById(`sel-${id}`);
+  const statEl = document.getElementById(`stat-${id}`);
+  if (!selDiv || !statEl) return;
+
+  if (sistem === null || fisik === null) {
+    selDiv.className = 'selisih-cell selisih-empty'; selDiv.textContent = '—';
+    statEl.className = 'status-badge status-empty';  statEl.textContent = '—';
+    updateAlertSelisih(); return;
+  }
+
+  const diff = fisik - sistem;
+  selDiv.textContent = diff >= 0 ? '+' + diff : diff;
+
+  if (diff === 0) {
+    selDiv.className = 'selisih-cell selisih-ok';
+    statEl.className = 'status-badge status-ok'; statEl.textContent = 'OK';
+  } else if (Math.abs(diff) <= 2) {
+    selDiv.className = 'selisih-cell selisih-minor';
+    statEl.className = 'status-badge status-minor'; statEl.textContent = 'MINOR';
+  } else {
+    selDiv.className = 'selisih-cell selisih-danger';
+    statEl.className = 'status-badge status-selisih'; statEl.textContent = 'SELISIH';
+  }
+  updateAlertSelisih();
+}
+
+function updateAlertSelisih() {
+  let jmlSelisih = 0;
+  stokRows.forEach(id => {
+    const stat = document.getElementById(`stat-${id}`)?.textContent;
+    if (stat === 'SELISIH') jmlSelisih++;
+  });
+  const alert = document.getElementById('alertSelisih');
+  if (jmlSelisih > 0) {
+    alert.classList.add('show');
+    document.getElementById('alertSelisihText').textContent =
+      `⚠️ Terdapat ${jmlSelisih} SKU dengan selisih melebihi batas toleransi (> 2 unit)!`;
+  } else {
+    alert.classList.remove('show');
+  }
+}
+
+function ambilDataStok() {
+  return stokRows.map((id, i) => ({
+    no:       i + 1,
+    sku:      document.getElementById(`sku-nama-${id}`)?.value    || '',
+    satuan:   document.getElementById(`sku-sat-${id}`)?.value     || '',
+    sistem:   document.getElementById(`sku-sistem-${id}`)?.value  || '',
+    fisik:    document.getElementById(`sku-fisik-${id}`)?.value   || '',
+    selisih:  document.getElementById(`sel-${id}`)?.textContent   || '',
+    status:   document.getElementById(`stat-${id}`)?.textContent  || '',
+    ket:      document.getElementById(`sku-ket-${id}`)?.value     || '',
+  })).filter(r => r.sku);
+}
+
+// ════════════════════════════════════════════════════════
+// AKTIVITAS
+// ════════════════════════════════════════════════════════
+function buatAktivitas() {
+  const grid = document.querySelector('.aktivitas-grid');
+  AKTIVITAS.forEach((act, i) => {
+    const div = document.createElement('div');
+    div.className = 'akt-row';
+    div.innerHTML = `
+      <div class="akt-cell akt-name">${act}</div>
+      <div class="akt-cell"><input type="number" id="akt-trx-${i}" placeholder="0" min="0"></div>
+      <div class="akt-cell"><input type="number" id="akt-qty-${i}" placeholder="0" min="0"></div>
+      <div class="akt-cell"><input type="text" id="akt-dok-${i}" placeholder="No. DO/PO"></div>
+    `;
+    grid.appendChild(div);
+  });
+}
+
+function ambilDataAktivitas() {
+  return AKTIVITAS.map((act, i) => ({
+    aktivitas:   act,
+    transaksi:   document.getElementById(`akt-trx-${i}`)?.value || '0',
+    qty:         document.getElementById(`akt-qty-${i}`)?.value || '0',
+    dokumen:     document.getElementById(`akt-dok-${i}`)?.value || '',
+  }));
+}
+
+// ════════════════════════════════════════════════════════
+// AREA
+// ════════════════════════════════════════════════════════
+function buatArea() {
+  const list = document.getElementById('areaList');
+  AREA_ITEMS.forEach((item, i) => {
+    const div = document.createElement('div');
+    div.className = 'area-item';
+    div.innerHTML = `
+      <div class="area-name">${item.icon} ${item.name}</div>
+      <select class="kondisi-select default" id="area-cond-${i}" onchange="updateKondisiStyle(${i})">
+        <option value="">— Pilih —</option>
+        <option value="Baik">✓ Baik</option>
+        <option value="Perlu Perhatian">⚠ Perlu Perhatian</option>
+        <option value="Rusak / Bermasalah">✗ Rusak / Bermasalah</option>
+      </select>
+      <div class="area-ket">
+        <input type="text" id="area-ket-${i}" placeholder="Keterangan / tindakan">
+      </div>
+    `;
+    list.appendChild(div);
+  });
+}
+
+function updateKondisiStyle(i) {
+  const sel = document.getElementById(`area-cond-${i}`);
+  sel.className = 'kondisi-select';
+  const v = sel.value;
+  if (v === 'Baik')                  sel.classList.add('baik');
+  else if (v === 'Perlu Perhatian')  sel.classList.add('perlu');
+  else if (v === 'Rusak / Bermasalah') sel.classList.add('rusak');
+  else                               sel.classList.add('default');
+}
+
+function ambilDataArea() {
+  return AREA_ITEMS.map((item, i) => ({
+    nama:     item.name,
+    kondisi:  document.getElementById(`area-cond-${i}`)?.value || '',
+    ket:      document.getElementById(`area-ket-${i}`)?.value  || '',
+  }));
+}
+
+// ════════════════════════════════════════════════════════
+// NAVIGASI ANTAR SEKSI
+// ════════════════════════════════════════════════════════
+function gotoSection(idx) {
+  // Sembunyikan semua
+  for (let i = 0; i < TOTAL_SECTIONS; i++) {
+    const c = document.getElementById(`sec-${i}`);
+    if (c) c.classList.remove('active');
+  }
+  const target = document.getElementById(`sec-${idx}`);
+  if (target) { target.classList.add('active'); target.scrollIntoView({ behavior:'smooth', block:'start' }); }
+
+  currentSection = idx;
+  updateStepUI();
+
+  if (idx === 5) buatRingkasan();
+}
+
+function nextSection(fromIdx) {
+  if (!validasiSeksi(fromIdx)) return;
+  // Mark done
+  const steps = document.querySelectorAll('.step-item');
+  steps[fromIdx]?.classList.add('done');
+  gotoSection(fromIdx + 1);
+}
+
+function prevSection(fromIdx) {
+  gotoSection(fromIdx - 1);
+}
+
+function updateStepUI() {
+  const steps = document.querySelectorAll('.step-item');
+  steps.forEach((s, i) => {
+    s.classList.remove('active');
+    if (i === currentSection) s.classList.add('active');
+  });
+  // Progress bar
+  const pct = ((currentSection + 1) / TOTAL_SECTIONS) * 100;
+  document.getElementById('progressBar').style.width = pct + '%';
+}
+
+// ════════════════════════════════════════════════════════
+// VALIDASI PER SEKSI
+// ════════════════════════════════════════════════════════
+function validasiSeksi(idx) {
+  if (idx === 0) {
+    let ok = true;
+    const checks = [
+      { id:'tanggal',     err:'err-tanggal' },
+      { id:'picKeluar',   err:'err-picKeluar' },
+      { id:'picMasuk',    err:'err-picMasuk' },
+      { id:'jamSerah',    err:'err-jamSerah' },
+    ];
+    checks.forEach(({ id, err }) => {
+      const el = document.getElementById(id);
+      const errEl = document.getElementById(err);
+      if (!el.value.trim()) {
+        el.classList.add('error');
+        errEl.classList.add('show');
+        ok = false;
+      } else {
+        el.classList.remove('error');
+        errEl.classList.remove('show');
+      }
+    });
+
+    // Cek shift keluar
+    if (!document.querySelector('input[name="shiftKeluar"]:checked')) {
+      document.getElementById('err-shiftKeluar').classList.add('show');
+      ok = false;
+    } else {
+      document.getElementById('err-shiftKeluar').classList.remove('show');
+    }
+
+    // Cek shift masuk
+    if (!document.querySelector('input[name="shiftMasuk"]:checked')) {
+      document.getElementById('err-shiftMasuk').classList.add('show');
+      ok = false;
+    } else {
+      document.getElementById('err-shiftMasuk').classList.remove('show');
+    }
+
+    return ok;
+  }
+
+  if (idx === 1) {
+    const stok = ambilDataStok();
+    if (stok.length === 0) {
+      alert('⚠️ Minimal 1 baris data stok harus diisi sebelum melanjutkan.');
+      return false;
+    }
+  }
+  return true;
+}
+
+// ════════════════════════════════════════════════════════
+// RINGKASAN
+// ════════════════════════════════════════════════════════
+function buatRingkasan() {
+  const stok = ambilDataStok();
+  const jmlSelisih = stok.filter(r => r.status === 'SELISIH').length;
+  const shiftK = document.querySelector('input[name="shiftKeluar"]:checked')?.value || '-';
+  const shiftM = document.querySelector('input[name="shiftMasuk"]:checked')?.value  || '-';
+
+  document.getElementById('ringkasanContent').innerHTML = `
+    <table style="width:100%;border-collapse:collapse;">
+      <tr><td style="padding:3px 0;color:var(--gray-5);width:45%;">Tanggal</td>
+          <td style="font-weight:600;">${document.getElementById('tanggal').value || '-'}</td></tr>
+      <tr><td style="padding:3px 0;color:var(--gray-5);">Nomor BA</td>
+          <td style="font-family:'DM Mono',monospace;font-weight:600;">${document.getElementById('noBA').value}</td></tr>
+      <tr><td style="padding:3px 0;color:var(--gray-5);">Shift</td>
+          <td style="font-weight:600;">${shiftK} → ${shiftM}</td></tr>
+      <tr><td style="padding:3px 0;color:var(--gray-5);">PIC Keluar</td>
+          <td style="font-weight:600;">${document.getElementById('picKeluar').value || '-'}</td></tr>
+      <tr><td style="padding:3px 0;color:var(--gray-5);">PIC Masuk</td>
+          <td style="font-weight:600;">${document.getElementById('picMasuk').value || '-'}</td></tr>
+      <tr><td style="padding:3px 0;color:var(--gray-5);">Jumlah SKU</td>
+          <td style="font-weight:600;">${stok.length} SKU diisi</td></tr>
+      <tr><td style="padding:3px 0;color:var(--gray-5);">Selisih Stok</td>
+          <td style="font-weight:600;color:${jmlSelisih > 0 ? 'var(--red)' : 'var(--green)'};">
+            ${jmlSelisih > 0 ? `⚠️ ${jmlSelisih} SKU selisih!` : '✅ Tidak ada selisih'}</td></tr>
+    </table>`;
+}
+
+// ════════════════════════════════════════════════════════
+// SUBMIT KE GOOGLE APPS SCRIPT
+// ════════════════════════════════════════════════════════
+async function submitForm() {
+  if (!GAS_URL) {
+    alert('⚠️ URL Apps Script belum diisi!\n\nIsi URL di bagian "Konfigurasi" di atas halaman, lalu klik Simpan.');
+    return;
+  }
+
+  // Validasi tanda tangan
+  if (!document.getElementById('ttdNamaKeluar').value.trim() ||
+      !document.getElementById('ttdNamaMasuk').value.trim()) {
+    alert('⚠️ Nama PIC pada bagian Tanda Tangan wajib diisi sebelum submit.');
+    return;
+  }
+
+  tampilOverlay(true, 'Mengirim Data...', 'Menyimpan ke Google Sheets & mengirim notifikasi email...');
+
+  // Kumpulkan semua data
+  const payload = {
+    tanggal:        document.getElementById('tanggal').value,
+    noBA:           document.getElementById('noBA').value,
+    shiftKeluar:    document.querySelector('input[name="shiftKeluar"]:checked')?.value || '',
+    shiftMasuk:     document.querySelector('input[name="shiftMasuk"]:checked')?.value  || '',
+    picKeluar:      document.getElementById('picKeluar').value,
+    picMasuk:       document.getElementById('picMasuk').value,
+    jamSerah:       document.getElementById('jamSerah').value,
+    lokasi:         document.getElementById('lokasi').value,
+    stok:           ambilDataStok(),
+    aktivitas:      ambilDataAktivitas(),
+    area:           ambilDataArea(),
+    catatanMasalah:    document.getElementById('catatanMasalah').value,
+    catatanInstruksi:  document.getElementById('catatanInstruksi').value,
+    catatanEskalasi:   document.getElementById('catatanEskalasi').value,
+    ttdNamaKeluar:  document.getElementById('ttdNamaKeluar').value,
+    ttdJabKeluar:   document.getElementById('ttdJabKeluar').value,
+    ttdStatusKeluar:document.getElementById('ttdStatusKeluar').value,
+    ttdNamaMasuk:   document.getElementById('ttdNamaMasuk').value,
+    ttdJabMasuk:    document.getElementById('ttdJabMasuk').value,
+    ttdStatusMasuk: document.getElementById('ttdStatusMasuk').value,
+    ttdNamaSpv:     document.getElementById('ttdNamaSpv').value,
+    ttdJabSpv:      document.getElementById('ttdJabSpv').value,
+    ttdStatusSpv:   document.getElementById('ttdStatusSpv').value,
+    waktuSubmit:    new Date().toISOString(),
+    sumberForm:     'Web Form HTML',
+  };
+
+  try {
+    const resp = await fetch(GAS_URL, {
+      method:  'POST',
+      mode:    'no-cors',       // Google Apps Script memerlukan no-cors
+      headers: { 'Content-Type': 'text/plain' },
+      body:    JSON.stringify(payload),
+    });
+
+    // no-cors = opaque response, anggap sukses jika tidak throw
+    tampilOverlay(false);
+    tampilSukses(payload.noBA);
+
+  } catch (err) {
+    tampilOverlay(false);
+    alert('❌ Gagal mengirim data.\n\nError: ' + err.message +
+      '\n\nPastikan:\n1. URL Apps Script sudah benar\n2. Deploy Apps Script sudah diatur "Anyone can access"\n3. Koneksi internet aktif');
+  }
+}
+
+function tampilOverlay(show, title, sub) {
+  const overlay = document.getElementById('overlay');
+  if (show) {
+    overlay.classList.add('show');
+    if (title) document.getElementById('overlayTitle').textContent = title;
+    if (sub)   document.getElementById('overlaySub').textContent   = sub;
+  } else {
+    overlay.classList.remove('show');
+  }
+}
+
+function tampilSukses(noBA) {
+  // Sembunyikan semua seksi
+  for (let i = 0; i < TOTAL_SECTIONS; i++) {
+    const c = document.getElementById(`sec-${i}`);
+    if (c) c.classList.remove('active');
+  }
+  document.getElementById('progressBar').style.width = '100%';
+  document.getElementById('successBA').textContent = 'Nomor BA: ' + noBA;
+  document.getElementById('successBox').classList.add('show');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ════════════════════════════════════════════════════════
+// RESET FORM
+// ════════════════════════════════════════════════════════
+function resetForm() {
+  if (!confirm('Reset semua isian? Data yang belum disubmit akan hilang.')) return;
+
+  const now = new Date();
+  document.getElementById('tanggal').value  = now.toISOString().split('T')[0];
+  document.getElementById('noBA').value     = generateBA(now);
+  document.getElementById('jamSerah').value =
+    now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+
+  ['picKeluar','picMasuk','lokasi','catatanMasalah','catatanInstruksi','catatanEskalasi',
+   'ttdNamaKeluar','ttdJabKeluar','ttdNamaMasuk','ttdJabMasuk','ttdNamaSpv','ttdJabSpv']
+    .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+
+  // Reset radio buttons & shift visual
+  document.querySelectorAll('.shift-btn').forEach(b => b.classList.remove('selected'));
+  document.querySelectorAll('input[type="radio"]').forEach(r => r.checked = false);
+
+  // Reset stok rows
+  stokRows = [];
+  document.getElementById('stokBody').innerHTML = '';
+  for (let i = 0; i < 5; i++) tambahBariStok();
+
+  // Reset aktivitas
+  AKTIVITAS.forEach((_, i) => {
+    ['akt-trx-','akt-qty-','akt-dok-'].forEach(prefix => {
+      const el = document.getElementById(prefix + i); if (el) el.value = '';
+    });
+  });
+
+  // Reset area
+  AREA_ITEMS.forEach((_, i) => {
+    const sel = document.getElementById(`area-cond-${i}`);
+    if (sel) { sel.value = ''; updateKondisiStyle(i); }
+    const ket = document.getElementById(`area-ket-${i}`);
+    if (ket) ket.value = '';
+  });
+
+  // Reset TTD selects
+  ['ttdStatusKeluar','ttdStatusMasuk','ttdStatusSpv'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.selectedIndex = 0;
+  });
+
+  // Reset step indicators
+  document.querySelectorAll('.step-item').forEach(s => s.classList.remove('done','active'));
+
+  // Sembunyikan success, tampilkan seksi 0
+  document.getElementById('successBox').classList.remove('show');
+  document.getElementById('alertSelisih').classList.remove('show');
+  gotoSection(0);
+}
+</script>
+
+<!--
+════════════════════════════════════════════════════════════════════
+TAMBAHKAN FUNGSI doPost() INI KE FILE AppScript_SerahTerima.gs ANDA
+════════════════════════════════════════════════════════════════════
+
+// Fungsi penerima POST dari HTML Form
+function doPost(e) {
+  try {
+    var data = JSON.parse(e.postData.contents);
+    var ss   = SpreadsheetApp.openById("GANTI_DENGAN_ID_SPREADSHEET_ANDA");
+    
+    // Simpan ke Log Rekap Harian
+    simpanKeLogDariWebForm(ss, data);
+    
+    // Kirim email notifikasi
+    kirimEmail(data, ss.getUrl());
+    
+    return ContentService
+      .createTextOutput(JSON.stringify({ status: 'ok', noBA: data.noBA }))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch(err) {
+    return ContentService
+      .createTextOutput(JSON.stringify({ status: 'error', msg: err.message }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+function simpanKeLogDariWebForm(ss, data) {
+  var log     = ss.getSheetByName("Log Rekap Harian");
+  var lastRow = Math.max(log.getLastRow(), 4) + 1;
+  
+  var stokDiisi   = (data.stok || []).length;
+  var jmlSelisih  = (data.stok || []).filter(function(r) { return r.status === 'SELISIH'; }).length;
+  var totalSelQty = (data.stok || []).reduce(function(s,r) {
+    var sel = parseInt(r.selisih) || 0; return s + Math.abs(sel);
+  }, 0);
+  var statusBA = jmlSelisih > 0 ? 'Ada Selisih-Eskalasi' : 'Selesai & Disetujui';
+  
+  log.getRange(lastRow, 1).setValue(lastRow - 4);
+  log.getRange(lastRow, 2).setValue(data.tanggal).setNumberFormat("dd/MM/yyyy");
+  log.getRange(lastRow, 3).setValue(data.shiftKeluar);
+  log.getRange(lastRow, 4).setValue(data.shiftMasuk);
+  log.getRange(lastRow, 5).setValue(data.picKeluar);
+  log.getRange(lastRow, 6).setValue(data.picMasuk);
+  log.getRange(lastRow, 7).setValue(stokDiisi);
+  log.getRange(lastRow, 8).setValue(jmlSelisih);
+  log.getRange(lastRow, 9).setValue(totalSelQty);
+  log.getRange(lastRow, 10).setValue(statusBA);
+  log.getRange(lastRow, 11).setValue(data.catatanEskalasi || data.catatanInstruksi || 'Normal');
+  
+  if (jmlSelisih > 0) {
+    log.getRange(lastRow, 1, 1, 11).setBackground("#FEE2E2");
+  } else {
+    log.getRange(lastRow, 1, 1, 11).setBackground("#DCFCE7");
+  }
+  SpreadsheetApp.flush();
+}
+
+// Cara Deploy:
+// 1. Tambah kode di atas ke file .gs
+// 2. Klik Deploy > New Deployment
+// 3. Pilih tipe: Web App
+// 4. Execute as: Me (your account)
+// 5. Who has access: Anyone
+// 6. Klik Deploy > salin URL Web App
+// 7. Tempel URL tersebut di form HTML bagian Konfigurasi
+════════════════════════════════════════════════════════════════════
+-->
+</body>
+</html>
